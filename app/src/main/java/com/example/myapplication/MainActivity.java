@@ -25,7 +25,6 @@ import com.google.location.lbs.gnss.gps.pseudorange.Lla2EcefConverter;
 public class MainActivity extends Activity {
 
     Ecef2LlaConverter.GeodeticLlaValues geodeticLlaValues;
-
     int PERMISSION_REQUEST_CODE;
 
     TextView tvEnabledGPS;
@@ -113,12 +112,14 @@ public class MainActivity extends Activity {
     private String formatLocation(Location location) {
         if (location == null)
             return "";
-       // geodeticLlaValues.
-      //  Lla2EcefConverter.convertFromLlaToEcefMeters()
-        return String.format(
-                "Coordinates: lat = %1$.4f, lon = %2$.4f, alt = %2$.4f, time = %3$tF %3$tT",
-                location.getLatitude(), location.getLongitude(),location.getAltitude(), new Date(
-                        location.getTime()));
+        geodeticLlaValues  =new Ecef2LlaConverter.GeodeticLlaValues( Math.toRadians(location.getLatitude()), Math.toRadians(location.getLongitude()),location.getAltitude());
+       double[] positionEcefMeters = Lla2EcefConverter.convertFromLlaToEcefMeters(geodeticLlaValues);
+       return String.format(
+                "Coordinates: x = %1$.4f, y = %2$.4f, z = %3$.4f",
+                positionEcefMeters[0], positionEcefMeters[1],positionEcefMeters[2]);
+       /* return String.format(
+                "Coordinates: lat = %1$.4, lon = %2$.4f, alt = %2$.4f",
+               location.getLatitude(), location.getLongitude(), location.getAltitude());*/
     }
 
     private void checkEnabled() {
