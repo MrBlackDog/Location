@@ -1,4 +1,5 @@
 package com.example.myapplication;
+import java.io.IOException;
 import java.util.Date;
 
 import android.Manifest;
@@ -18,6 +19,12 @@ import android.widget.TextView;
 
 import com.google.location.lbs.gnss.gps.pseudorange.Ecef2LlaConverter;
 import com.google.location.lbs.gnss.gps.pseudorange.Lla2EcefConverter;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 //import androidx.annotation.NonNull;
 //import androidx.core.app.ActivityCompat;
@@ -114,6 +121,7 @@ public class MainActivity extends Activity {
             return "";
         geodeticLlaValues  =new Ecef2LlaConverter.GeodeticLlaValues( Math.toRadians(location.getLatitude()), Math.toRadians(location.getLongitude()),location.getAltitude());
        double[] positionEcefMeters = Lla2EcefConverter.convertFromLlaToEcefMeters(geodeticLlaValues);
+        SendCoords( (float) positionEcefMeters[0], (float) positionEcefMeters[1], (float) positionEcefMeters[2]);
        return String.format(
                 "Coordinates: x = %1$.4f, y = %2$.4f, z = %3$.4f",
                 positionEcefMeters[0], positionEcefMeters[1],positionEcefMeters[2]);
@@ -121,6 +129,52 @@ public class MainActivity extends Activity {
                 "Coordinates: lat = %1$.4, lon = %2$.4f, alt = %2$.4f",
                location.getLatitude(), location.getLongitude(), location.getAltitude());*/
     }
+
+    public void GetCoords(){
+        {
+            //mDeviceInfo.x = 146.5f;
+            //mDeviceInfo.y = 35.2f;
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url("http://mrblackdog.ddns.net:533/CoordShare/GetFriendsCoords?Name=Client")
+                    .build();
+            //client.setConnectTimeout(15, TimeUnit.SECONDS);
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                }
+
+                @Override public void onResponse(Call call, Response response) throws IOException {
+                    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                    else{
+                        String[] ResponseString = response.body().string().split(";");
+                     //   frX =Float.parseFloat( ResponseString[0].replace(",","."));
+                     //   frY =Float.parseFloat( ResponseString[1].replace(",","."));
+                    }
+                }
+            });
+        }
+    }
+
+    public void SendCoords(float x, float y, float z){
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url("http://mrblackdog.ddns.net:533/CoordShare/SaveMyCoords?Name=Client&X="+x+"&Y="+y+"&Z="+z)
+                    .build();
+            //client.setConnectTimeout(15, TimeUnit.SECONDS);
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                }
+
+                @Override public void onResponse(Call call, Response response) throws IOException {
+                    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                }
+            });
+        }
+
 
     private void checkEnabled() {
         tvEnabledGPS.setText("Enabled: "
